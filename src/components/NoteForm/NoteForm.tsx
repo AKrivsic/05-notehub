@@ -1,11 +1,12 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
 import css from './NoteForm.module.css';
 import type { CreateNoteParams } from '../../services/noteService';
+import { createNote } from '../../services/noteService';
 
 interface NoteFormProps {
-  onSubmit: (values: CreateNoteParams) => void;
-  onCancel: () => void;
+  onClose: () => void;
 }
 
 const validationSchema = Yup.object().shape({
@@ -14,12 +15,26 @@ const validationSchema = Yup.object().shape({
   tag: Yup.mixed().oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping']).required('Required'),
 });
 
-const NoteForm = ({ onSubmit, onCancel }: NoteFormProps) => {
+const NoteForm = ({ onClose }: NoteFormProps) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      onClose();
+    },
+  });
   return (
     <Formik
       initialValues={{ title: '', content: '', tag: 'Todo' }}
-      onSubmit={onSubmit}
       validationSchema={validationSchema}
+      onSubmit={(values) => {
+        mutation.mutate({
+          ...values,
+          tag: values.tag as CreateNoteParams['tag'],
+        });
+      }}
     >
       {({ isSubmitting }) => (
         <Form className={css.form}>
@@ -48,10 +63,10 @@ const NoteForm = ({ onSubmit, onCancel }: NoteFormProps) => {
           </div>
 
           <div className={css.actions}>
-            <button type="button" className={css.cancelButton} onClick={onCancel}>
+            <button type="button" className={css.cancelButton} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className={css.submitButton} disabled={isSubmitting}>
+            <button type="submit" className={css.submitButton} disabled={isSubmitting || mutation.isPending}>
               Create note
             </button>
           </div>

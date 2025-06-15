@@ -41,11 +41,11 @@ export interface CreateNoteParams {
 }
 
 export const createNote = async (note: CreateNoteParams): Promise<Note> => {
-  const { data } = await instance.post('', note);
+  const { data } = await instance.post<Note>('', note);
   return data;
 };
 
-export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await instance.delete(`/${id}`);
+export const deleteNote = async (id: number): Promise<Note> => {
+  const { data } = await instance.delete<Note>(`/${id}`);
   return data;
 };
