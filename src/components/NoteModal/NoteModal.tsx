@@ -16,7 +16,11 @@ const NoteModal = ({ children, onClose }: NoteModalProps) => {
 
     window.addEventListener('keydown', handleKeyDown);
     document.body.style.overflow = 'hidden';
-    return () => window.removeEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
